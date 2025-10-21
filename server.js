@@ -26,25 +26,28 @@ mongoose.connection.once('open', () => {
 });
 
 // CORS configuration
-// CORS configuration
+// --- CORS configuration ---
 const allowedOrigins = [
-  'http://localhost:3000', // local dev
-  'https://music-player-frontend-nu.vercel.app', // production frontend
+  'http://localhost:3000',
+  'https://music-player-frontend-nu.vercel.app',
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
+    // allow REST tools or server-to-server calls with no origin
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('❌ CORS blocked for origin:', origin);
+      console.warn(`❌ CORS blocked request from: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
+  credentials: true, // allow cookies and sessions
   optionsSuccessStatus: 200,
 };
+
+app.use(cors(corsOptions));
+
 
 // Middleware
 app.use(cors(corsOptions));
