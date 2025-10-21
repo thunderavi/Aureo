@@ -27,7 +27,7 @@ mongoose.connection.once('open', () => {
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || 'http://music-player-frontend-nu.vercel.app',
   credentials: true,
   optionsSuccessStatus: 200
 };
