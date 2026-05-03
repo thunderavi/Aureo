@@ -9,10 +9,7 @@ const sessionConfig = {
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    touchAfter: 24 * 3600, // Update session once per 24 hours
-    crypto: {
-      secret: process.env.SESSION_SECRET || 'your-secret-key'
-    }
+    touchAfter: 24 * 3600 // Update session once per 24 hours
   }),
   cookie: {
     maxAge: SESSION_CONFIG.MAX_AGE,

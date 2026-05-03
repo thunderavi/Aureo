@@ -31,6 +31,19 @@ const userSchema = new mongoose.Schema({
     enum: Object.values(USER_ROLES),
     default: USER_ROLES.USER
   },
+  likedSongs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Song'
+  }],
+  avatar: {
+    type: String,
+    default: ''
+  },
+  bio: {
+    type: String,
+    default: '',
+    maxLength: 160
+  },
   createdAt: {
     type: Date,
     default: Date.now

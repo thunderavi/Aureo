@@ -502,6 +502,105 @@ const getGenres = async (req, res, next) => {
   }
 };
 
+// @desc    Toggle like song
+// @route   POST /api/songs/:id/like
+// @access  Private
+const toggleLikeSong = async (req, res, next) => {
+  try {
+    const song = await Song.findById(req.params.id);
+    if (!song) {
+      return next(createError('Song not found', 404));
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(createError('User not found', 404));
+    }
+
+    const isLiked = user.likedSongs.some(id => id.toString() === song._id.toString());
+
+    if (isLiked) {
+      // Unlike
+      user.likedSongs = user.likedSongs.filter(id => id.toString() !== song._id.toString());
+    } else {
+      // Like
+      user.likedSongs.push(song._id);
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: isLiked ? 'Song unliked' : 'Song liked',
+      isLiked: !isLiked
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's liked songs
+// @route   GET /api/songs/liked
+// @access  Private
+const getLikedSongs = async (req, res, next) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query.page, req.query.limit);
+    const user = await req.user.populate({
+      path: 'likedSongs',
+      populate: { path: 'uploadedBy', select: 'username' }
+    });
+
+    const total = user.likedSongs.length;
+    // Handle pagination manually for now or use Song.find({ _id: { $in: user.likedSongs } })
+    const likedSongs = await Song.find({ _id: { $in: user.likedSongs } })
+      .populate('uploadedBy', 'username')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const formattedSongs = formatSongsResponse(likedSongs);
+
+    res.status(200).json({
+      success: true,
+      ...formatPaginationResponse(formattedSongs, total, page, limit)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get recommended songs based on liked genres
+// @route   GET /api/songs/recommendations
+// @access  Private
+const getRecommendations = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('likedSongs');
+    
+    if (!user.likedSongs || user.likedSongs.length === 0) {
+      // If no liked songs, return 6 random songs
+      const songs = await Song.aggregate([{ $sample: { size: 6 } }]);
+      return res.status(200).json({ success: true, songs });
+    }
+
+    // Get genres of liked songs
+    const likedGenres = [...new Set(user.likedSongs.map(s => s.genre))];
+    const likedSongIds = user.likedSongs.map(s => s._id);
+
+    // Find songs in same genres that are not already liked
+    const recommendations = await Song.find({
+      genre: { $in: likedGenres },
+      _id: { $nin: likedSongIds }
+    }).limit(6);
+
+    res.status(200).json({
+      success: true,
+      songs: recommendations
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   uploadSong,
   getAllSongs,
@@ -512,5 +611,8 @@ module.exports = {
   streamAudio,
   getCoverImage,
   searchSongs,
-  getGenres
+  getGenres,
+  toggleLikeSong,
+  getLikedSongs,
+  getRecommendations
 };

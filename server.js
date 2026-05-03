@@ -12,6 +12,8 @@ const { errorHandler, notFound } = require('./src/middleware/errorHandler');
 const authRoutes = require('./src/routes/auth');
 const songRoutes = require('./src/routes/songs');
 const adminRoutes = require('./src/routes/admin');
+const playlistRoutes = require('./src/routes/playlists');
+const userRoutes = require('./src/routes/users');
 
 // Initialize Express app
 const app = express();
@@ -49,7 +51,9 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       songs: '/api/songs',
-      admin: '/api/admin'
+      admin: '/api/admin',
+      playlists: '/api/playlists',
+      users: '/api/users'
     }
   });
 });
@@ -58,6 +62,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/playlists', playlistRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling
 app.use(notFound);
@@ -75,6 +81,7 @@ app.listen(PORT, () => {
   console.log(`  - Auth: http://localhost:${PORT}/api/auth`);
   console.log(`  - Songs: http://localhost:${PORT}/api/songs`);
   console.log(`  - Admin: http://localhost:${PORT}/api/admin`);
+  console.log(`  - Playlists: http://localhost:${PORT}/api/playlists`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 

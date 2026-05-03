@@ -12,7 +12,10 @@ const {
   streamAudio,
   getCoverImage,
   searchSongs,
-  getGenres
+  getGenres,
+  toggleLikeSong,
+  getLikedSongs,
+  getRecommendations
 } = require('../controllers/songController');
 const { isAuthenticated } = require('../middleware/auth');
 const {
@@ -58,6 +61,17 @@ router.get('/stream/audio/:id', isAuthenticated, streamAudio);
 // @desc    Get cover image
 // @access  Private
 router.get('/stream/image/:id', isAuthenticated, getCoverImage);
+
+// @route   GET /api/songs/liked
+// @desc    Get user's liked songs
+// @access  Private
+router.get('/liked', isAuthenticated, getLikedSongs);
+router.get('/recommendations', isAuthenticated, getRecommendations);
+
+// @route   POST /api/songs/:id/like
+// @desc    Toggle like song
+// @access  Private
+router.post('/:id/like', isAuthenticated, idValidation, toggleLikeSong);
 
 // @route   POST /api/songs/upload
 // @desc    Upload new song
