@@ -1,6 +1,7 @@
 // src/controllers/songController.js
 const mongoose = require('mongoose');
 const Song = require('../models/Song');
+const User = require('../models/User');
 const { getGFS, getImageGFS } = require('../config/gridfs');
 const { 
   getPagination, 
@@ -579,7 +580,8 @@ const getRecommendations = async (req, res) => {
     if (!user.likedSongs || user.likedSongs.length === 0) {
       // If no liked songs, return 6 random songs
       const songs = await Song.aggregate([{ $sample: { size: 6 } }]);
-      return res.status(200).json({ success: true, songs });
+      const formattedSongs = formatSongsResponse(songs);
+      return res.status(200).json({ success: true, songs: formattedSongs });
     }
 
     // Get genres of liked songs
@@ -592,9 +594,11 @@ const getRecommendations = async (req, res) => {
       _id: { $nin: likedSongIds }
     }).limit(6);
 
+    const formattedRecommendations = formatSongsResponse(recommendations);
+
     res.status(200).json({
       success: true,
-      songs: recommendations
+      songs: formattedRecommendations
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
